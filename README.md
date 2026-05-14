@@ -31,38 +31,40 @@ Each node hosting the rApp gets:
 
 ## 1. Download the JAR
 
-Always pull from the latest release on this repository:
+Grab the `sentiment-reality-assembly-*.jar` from the [latest release](https://github.com/Give-Sentiment/sentiment-rapp-releases/releases) and save it somewhere convenient. The rest of this README assumes you've set:
 
 ```bash
-mkdir -p ~/sentiment/{logs,data,aci,kubernetes/data,target/scala-3.7.3,keys}
+export JAR_PATH=~/sentiment/sentiment.jar
+mkdir -p "$(dirname "$JAR_PATH")"
 mkdir -p ~/.sentiment-keys && chmod 700 ~/.sentiment-keys
-cd ~/sentiment
-
-curl -L -o target/scala-3.7.3/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar \
-  https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/download/v0.1.0-testnet/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar
+# ... drop the downloaded JAR at $JAR_PATH ...
 ```
 
-**Verify the SHA-256** before running anything (paste the hash from the [release page](https://github.com/Give-Sentiment/sentiment-rapp-releases/releases) into the `expected=` line):
+You can put the JAR anywhere; just substitute `$JAR_PATH` for that location.
+
+**Verify the SHA-256** before running anything. The release page shows the expected hash next to the asset:
 
 ```bash
-expected=PASTE_THE_RELEASE_PAGE_SHA256_HERE
-actual=$(shasum -a 256 target/scala-3.7.3/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar | awk '{print $1}')
-[ "$expected" = "$actual" ] && echo "✓ hash matches" || echo "✗ HASH MISMATCH — do not run"
+shasum -a 256 "$JAR_PATH"
 ```
 
-Once we submit the on-chain `DeployAppTransaction`, the canonical `binaryHash` will also be readable from NET L0; cross-check both sources.
+Compare against the hash on the release page. Once we submit the on-chain `DeployAppTransaction`, the canonical `binaryHash` will also be readable from NET L0; cross-check both sources.
+
+> *Alternatively, for scripted/unattended installs:*
+> ```bash
+> curl -L -o "$JAR_PATH" \
+>   https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/latest/download/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar
+> ```
 
 ## 2. Generate your own validator keystore
 
 Each operator runs with their own EC keystore. The Reality keytool is bundled inside the same JAR:
 
 ```bash
-cd ~/sentiment
 CL_KEYSTORE=~/.sentiment-keys/operator.p12 \
 CL_KEYALIAS=alias \
 CL_PASSWORD=password \
-  java -cp target/scala-3.7.3/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar \
-       org.reality.keytool.Main generate
+  java -cp "$JAR_PATH" org.reality.keytool.Main generate
 chmod 600 ~/.sentiment-keys/operator.p12
 ```
 
@@ -123,7 +125,7 @@ set -a; source ~/sentiment/config.env; set +a
 java --enable-native-access=ALL-UNNAMED \
      -Dtransport.libp2p.relay.addresses="$LIBP2P_RELAY_ADDRESSES" \
      -Djava.net.preferIPv4Stack=true \
-     -jar ~/sentiment/target/scala-3.7.3/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar \
+     -jar "$JAR_PATH" \
      --l0--command run-validator \
      --l0--env dev \
      --l0--keyalias alias --l0--password password \
