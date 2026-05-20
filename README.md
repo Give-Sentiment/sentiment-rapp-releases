@@ -1,6 +1,6 @@
 # Sentiment rApp Releases
 
-This repository hosts JAR distributions of the [Sentiment rApp](https://givesentiment.com) for [Reality](https://reality.network/) testnet and (later) mainnet.
+This repository hosts JAR distributions of the [Sentiment rApp](https://givesentiment.com) for [Reality](https://realitynet.xyz/) testnet and (later) mainnet.
 
 ## What is it?
 
