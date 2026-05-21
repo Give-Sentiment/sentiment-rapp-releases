@@ -17,17 +17,18 @@ Each node hosting the rApp gets:
 
 | | |
 |---|---|
-| Reality SDK | build 1078 (`6586bc85`) |
-| Testnet writer | live, single-host cluster (Mac mini) |
+| Reality SDK | build 1088 (`c5392177`) |
+| Testnet writer | live on the public testnet, 3-node cluster |
+| Inbound transport | **libp2p** (relay + hole-punching) — no port forwarding required for operators |
 | `DeployAppTransaction` on NET L0 | **not submitted yet** — once submitted, operators can discover us via NET L0 |
-| Third-party operator path | **manual join** (instructions below) until the deploy tx lands |
+| Third-party operator path | manual join (instructions below) until the deploy tx lands |
 
 ## Prerequisites
 
 - **Java 17** (OpenJDK / Amazon Corretto / Homebrew `openjdk@17`)
 - **~500 MB free disk** (snapshots + ACI DB grow over time)
-- **Outbound network access** to the Sentiment chain's L0/L1 hosts
-- **Inbound port forwarding** OR libp2p connectivity (operators behind CG-NAT need to set `LIBP2P_RELAY_ADDRESSES` to a relay multiaddr — Reality testnet's relay works)
+- **Outbound network access** to the Reality testnet libp2p relay (so your node can register for inbound traffic) and the Sentiment chain's L0/L1 hosts (initial bootstrap)
+- **No inbound port forwarding required** — libp2p handles NAT traversal via relay + hole-punching. If you happen to have a public-routable host with port forwarding, the node will use direct HTTP too; otherwise libp2p alone is sufficient.
 
 ## 1. Download the JAR
 
@@ -86,16 +87,18 @@ SENTIMENT_PUBLIC_KEY=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArXcT7Wr3pv8re1U
 NODE_TYPE=validator
 APP_IDENTIFIER=sentiment-reality
 
-# Your public IP — peers use this to dial back. Required.
-ADVERTISED_IP=<your-public-ip>
+# Your public IP — used for outbound libp2p registration. If you're behind
+# CG-NAT or otherwise can't accept inbound HTTP, 127.0.0.1 is fine; libp2p
+# routes return traffic via the relay.
+ADVERTISED_IP=127.0.0.1
 
-# Sentiment chain L0/L1 bootstrap (TBD — will be populated when the writer
-# moves to its public host. Until then, this list is empty and operators
-# can't join the Sentiment chain externally.)
-# L0_INITIAL_HOST=<sentiment-l0-host>
-# L0_INITIAL_PUBLIC_PORT=9000
-# L1_INITIAL_HOST=<sentiment-l1-host>
-# L1_INITIAL_PUBLIC_PORT=9010
+# Sentiment chain L0/L1 bootstrap. Operators dial these to fetch the initial
+# peer info; once libp2p is registered with the relay, all subsequent gossip
+# rides libp2p directly.
+L0_INITIAL_HOST=167.253.65.37
+L0_INITIAL_PUBLIC_PORT=9000
+L1_INITIAL_HOST=167.253.65.37
+L1_INITIAL_PUBLIC_PORT=9010
 
 # Reality NET L0 testnet (for rApp snapshot anchoring once the rApp is registered)
 # SENTIMENT_RAPP_ADDRESS=NET5ovhZRDnnaLK756jEdiR8nE8snz2SDJZ32uQX
@@ -103,9 +106,8 @@ ADVERTISED_IP=<your-public-ip>
 # NET_L0_PUBLIC_PORT=9000
 # NET_L0_PEER_ID=0000003264c7c8503da3d03b6021101a57b5eb933d887bb7e3fbf4b2a57c302dfc5008afb522059b1926e8220de1cfa9388183de60b376a7bd93268990d71157
 
-# libp2p relay — required for nodes behind CG-NAT (no inbound port forwarding).
-# Reality testnet's relay handles this. Comment out if your node has direct
-# inbound connectivity.
+# libp2p relay — Reality testnet's relay. With SDK build 1088+, libp2p is
+# always on; nodes behind CG-NAT use this relay for inbound traffic.
 LIBP2P_RELAY_ADDRESSES=/ip4/143.110.227.9/tcp/9003/p2p/16Uiu2HAmCRkapTKsQqC1kTPVSEKLNqtiCsumUnf3CAbVuJjGoQB6
 ```
 
@@ -117,7 +119,7 @@ chmod 600 ~/sentiment/config.env
 
 ## 4. Start the rApp
 
-A turnkey start script for operator nodes (`standalone/start.sh`) ships with the JAR and will be linked from a future release. **Pending — the writer's public host is not finalised, so operators cannot yet bootstrap externally.** Once that lands, the start command will be approximately:
+A turnkey start script for operator nodes (`standalone/start.sh`) ships with the source repository and will be linked from a future release. For now the command pattern is:
 
 ```bash
 set -a; source ~/sentiment/config.env; set +a
