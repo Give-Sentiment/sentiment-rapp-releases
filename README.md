@@ -108,7 +108,7 @@ L1_INITIAL_PUBLIC_PORT=9010
 
 # Sentiment-chain genesis peerIds — derived from the Sentiment writer's L0 and
 # L1 keystores. Your validator dials these to join the cluster.
-GENESIS_ID=a93c8ed8aef0dad8d9a9275d385e35a0f4893c1849d6275a899565c2d772f92f73fa7481445b9da4833825a96bb66929b635342c9053260e4dd0d6fd33ddf2e2
+GENESIS_ID=c754a46b9c4b3317bfccbe5faf0999005933d3ac1236a02233b531033dec26604d35b12d78a7facb657325ab8f098f47804812a70052f16912660db5870f3cfe
 L1_GENESIS_ID=f47b97b438e4d65286fea06c617592e51d0ce69e9962ffa787235fc4ab370b272aded409d805042982e2fb2b15def667ab59e3c071041759193e116c8ac5b828
 
 # Reality NET L0 anchoring — uncomment once the DeployAppTransaction lands on
