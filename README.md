@@ -20,7 +20,7 @@ You run a full Sentiment validator alongside whatever else you host. It is *not*
 | | |
 |---|---|
 | Reality SDK | build **1092** (`0da02f77`) — earlier builds lack the libp2p init gate fix |
-| Latest JAR | `sentiment-reality-assembly-0.1.0-SNAPSHOT.jar` (release `v0.1.2-testnet`) — SHA-256 `c1033306a5e39cf9ee8b58923b42cf3a40fd6827d5df220597ffb4f823841e46` |
+| Latest JAR | `sentiment-reality-assembly-0.1.0-SNAPSHOT.jar` (release `v0.1.2-testnet`) — SHA-256 `a53b87c2ef8bcf72886a59d05002cb15d2359645a9be9fc366dddbedf6566c72` |
 | Testnet writer | live on the public testnet, 3-node cluster at `167.253.65.37` |
 | Inbound transport | **libp2p** (relay + hole-punching) — no port forwarding required for operators |
 | Keystore wiring | **You MUST set `L0_KEYSTORE` + `L1_KEYSTORE`** in `config.env` (see step 3). Without them the node loads a hardcoded built-in keystore path instead of yours, signs with the wrong key, and dies in an `L0PeerDiscovery 401` loop. |
@@ -48,7 +48,7 @@ mkdir -p ~/.sentiment-keys && chmod 700 ~/.sentiment-keys
 
 ```bash
 shasum -a 256 "$JAR_PATH"
-# expected: c1033306a5e39cf9ee8b58923b42cf3a40fd6827d5df220597ffb4f823841e46
+# expected: a53b87c2ef8bcf72886a59d05002cb15d2359645a9be9fc366dddbedf6566c72
 ```
 
 Once the `DeployAppTransaction` lands on NET L0, the same `binaryHash` will also be readable from NET L0 — cross-check both sources.
