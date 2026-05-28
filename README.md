@@ -19,11 +19,12 @@ You run a full Sentiment validator alongside whatever else you host. It is *not*
 
 | | |
 |---|---|
-| Reality SDK | build **1088** (`c5392177`) — earlier builds lack the libp2p init gate fix |
-| Latest JAR | `sentiment-reality-assembly-0.1.0-SNAPSHOT.jar` — SHA-256 `791af07e72b8190e9aea9a7f4885e0bcf024e2389b96581a49afe59b8d17ca92` |
+| Reality SDK | build **1092** (`0da02f77`) — earlier builds lack the libp2p init gate fix |
+| Latest JAR | `sentiment-reality-assembly-0.1.0-SNAPSHOT.jar` (release `v0.1.2-testnet`) — SHA-256 `c1033306a5e39cf9ee8b58923b42cf3a40fd6827d5df220597ffb4f823841e46` |
 | Testnet writer | live on the public testnet, 3-node cluster at `167.253.65.37` |
 | Inbound transport | **libp2p** (relay + hole-punching) — no port forwarding required for operators |
-| `DeployAppTransaction` on NET L0 | submission in progress (Reality team is restarting NET L1 on `:9100`; allowlist gate temporarily disabled for testnet) — once landed, NET L0 anchoring lights up automatically |
+| Keystore wiring | **You MUST set `L0_KEYSTORE` + `L1_KEYSTORE`** in `config.env` (see step 3). Without them the node loads a hardcoded built-in keystore path instead of yours, signs with the wrong key, and dies in an `L0PeerDiscovery 401` loop. |
+| `DeployAppTransaction` on NET L0 | submitted; NET L1 → NET L0 anchoring is subject to Reality testnet block-inclusion timing. Once the rApp is registered on NET L0, anchoring lights up automatically. |
 
 ## Prerequisites
 
@@ -47,7 +48,7 @@ mkdir -p ~/.sentiment-keys && chmod 700 ~/.sentiment-keys
 
 ```bash
 shasum -a 256 "$JAR_PATH"
-# expected: 791af07e72b8190e9aea9a7f4885e0bcf024e2389b96581a49afe59b8d17ca92
+# expected: c1033306a5e39cf9ee8b58923b42cf3a40fd6827d5df220597ffb4f823841e46
 ```
 
 Once the `DeployAppTransaction` lands on NET L0, the same `binaryHash` will also be readable from NET L0 — cross-check both sources.
@@ -110,6 +111,16 @@ L1_INITIAL_PUBLIC_PORT=9010
 # L1 keystores. Your validator dials these to join the cluster.
 GENESIS_ID=c754a46b9c4b3317bfccbe5faf0999005933d3ac1236a02233b531033dec26604d35b12d78a7facb657325ab8f098f47804812a70052f16912660db5870f3cfe
 L1_GENESIS_ID=f47b97b438e4d65286fea06c617592e51d0ce69e9962ffa787235fc4ab370b272aded409d805042982e2fb2b15def667ab59e3c071041759193e116c8ac5b828
+
+# YOUR keystore paths — REQUIRED. The app loads the L0 and L1 signing keys from
+# these env vars. If you leave them unset, the node falls back to a hardcoded
+# built-in path (keys/l{0,1}-initial-validator-key.p12) that does NOT exist on
+# your machine and does NOT match your advertised identity — the L1 layer then
+# can't verify the L0's signed responses and the node dies in a repeating
+# `L0PeerDiscovery$L0PeerDiscoveryError$ ... 401 Unauthorized for GET
+# http://127.0.0.1:9000/cluster/info` loop. Point BOTH at your operator keystore:
+L0_KEYSTORE=/home/youruser/.sentiment-keys/operator.p12
+L1_KEYSTORE=/home/youruser/.sentiment-keys/operator.p12
 
 # Reality NET L0 anchoring — uncomment once the DeployAppTransaction lands on
 # NET L0 (see "Status" above). Until then, leave commented — your node still
@@ -244,6 +255,7 @@ The full source lives in a separate (currently private) repository: `Give-Sentim
 | Node behind CG-NAT, can't accept inbound | No port forwarding available | Ensure `LIBP2P_RELAY_ADDRESSES` is set; libp2p handles relay + hole-punching |
 | `InvalidRemoteAddress` on cluster join | Your `ADVERTISED_IP` doesn't match the IP genesis sees on your inbound TCP connection | Set `ADVERTISED_IP` to the actual public IP that genesis observes |
 | Startup log says `Unknown NODE_TYPE, defaulting to genesis` | Expected — `NODE_TYPE=validator` is the operator value | Harmless. It selects the default 9000-9012 port layout AND suppresses the SDK's L1 auto-join (which is what you want as an operator). |
+| Repeating `L0PeerDiscovery$L0PeerDiscoveryError$ ... 401 Unauthorized for ... GET http://127.0.0.1:9000/cluster/info`, then the JVM exits during L1 boot | `L0_KEYSTORE` / `L1_KEYSTORE` not set, so the node loaded the hardcoded built-in keystore path instead of yours — L0 signs responses with a key whose peerId doesn't match what it advertises, and L1's verify of those responses fails with a synthetic 401 | Set `L0_KEYSTORE` and `L1_KEYSTORE` in `config.env` (step 3) to the absolute path of your operator keystore, wipe `data/`, restart. Cross-check `SdkServices.make` in the logs: the reported `nodeId` must equal the peerId your keystore derives to. |
 
 ### Why a manual L1 join step?
 
