@@ -70,7 +70,7 @@ The keystore is your node's identity. Any rewards your node earns belong to the 
 | | |
 |---|---|
 | Tag | [`v0.1.4-testnet`](https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/tag/v0.1.4-testnet) |
-| JAR SHA-256 | `3d5a62db78d5fba5fc5526aeb6daf9b86f6b2a4371828daff4be686ae36f97b8` |
+| JAR SHA-256 | `200cafaeac82e781f64c04a5a958416ab1cfbbb97ac05df81c67e3c53d814536` |
 | Reality SDK | build **1095** (commit `608b68dc`) |
 | Sentiment chain writer | `46.101.82.227` (Reality testnet) |
 | NET L0 anchoring | enabled once the next `DeployAppTransaction` lands on NET L0; `run.sh` leaves `SENTIMENT_RAPP_ADDRESS` commented in `config.env` until then |
