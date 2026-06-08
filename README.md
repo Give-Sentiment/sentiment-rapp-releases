@@ -54,7 +54,8 @@ sentiment-rapp-releases/
 ├── run.sh
 ├── README.md
 ├── sentiment-reality.jar      # ~166 MB, hash-verified on download
-├── operator.p12               # YOUR keystore — back this up if you keep the node
+├── operator-l0.p12            # YOUR L0 keystore — back this up if you keep the node
+├── operator-l1.p12            # YOUR L1 keystore — distinct identity from L0
 ├── config.env                 # editable; delete to regenerate defaults
 ├── sentiment.log              # rolling log
 ├── sentiment.pid              # PID of the running JVM
@@ -69,7 +70,7 @@ The keystore is your node's identity. Any rewards your node earns belong to the 
 | | |
 |---|---|
 | Tag | [`v0.1.4-testnet`](https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/tag/v0.1.4-testnet) |
-| JAR SHA-256 | `059a1719f44633ee65ad86aa44bc8b0e02f6a9fddac4c71355a85997b93b054f` |
+| JAR SHA-256 | `3d5a62db78d5fba5fc5526aeb6daf9b86f6b2a4371828daff4be686ae36f97b8` |
 | Reality SDK | build **1095** (commit `608b68dc`) |
 | Sentiment chain writer | `46.101.82.227` (Reality testnet) |
 | NET L0 anchoring | enabled once the next `DeployAppTransaction` lands on NET L0; `run.sh` leaves `SENTIMENT_RAPP_ADDRESS` commented in `config.env` until then |
