@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
 # Sentiment rApp — one-command operator launcher.
 #
-#   ./run.sh             # install if needed + start (foreground tail)
+#   ./run.sh             # install if needed + WIPE local chain state + start
+#   ./run.sh --keep      # start WITHOUT wiping (resume from existing chain data)
 #   ./run.sh --stop      # stop the running node
 #   ./run.sh --status    # is it up? what's bound? what's the chain saying?
 #   ./run.sh --logs      # tail the log
-#   ./run.sh --clean     # wipe local state (data/, aci/, snapshot/) then restart
+#   ./run.sh --clean     # alias for default — explicit wipe + restart
 #
-# Re-running ./run.sh is safe: keystore, config, and chain data are preserved.
+# The default wipes local chain state on every start. This sidesteps the
+# "Divergence at genesis" trap that occurs whenever the chain has been
+# redeployed (the SDK refuses to download from a chain whose genesis hash
+# differs from your local data/). Keystores, config.env, and the JAR are
+# preserved — only chain snapshot data is wiped.
+#
+# The rApp UI's "Stop & Clear" button drops a .clean-on-restart marker before
+# exiting the JVM; the next ./run.sh wipes regardless of flags unless --keep
+# is passed.
 
 set -euo pipefail
 
 # ── Constants (release pinning) ──────────────────────────────────────────────
-RAPP_VERSION="v0.1.4-testnet"
+RAPP_VERSION="v0.1.5-testnet"
 JAR_URL="https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/download/${RAPP_VERSION}/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar"
-JAR_SHA256="200cafaeac82e781f64c04a5a958416ab1cfbbb97ac05df81c67e3c53d814536"
+JAR_SHA256="996a3b35d67cd72118571fb1d6eea84e82a67b864dc5d671f0b06955e42f21ac"
 
 # Sentiment chain (testnet) — where your operator node syncs from.
 CHAIN_HOST="46.101.82.227"
@@ -391,8 +400,25 @@ case "${1:-}" in
     --status)  show_status ;;
     --logs)    tail_logs ;;
     --clean)   stop_node; wipe_state; require_java; ensure_jar; ensure_keystore; ensure_config; launch_node ;;
-    --help|-h) sed -n '2,10p' "$0" | sed 's/^# \?//' ;;
+    --keep)
+        # Operator explicitly opts out of the auto-wipe. Clear any marker the
+        # UI left behind — operator's intent overrides the rApp's request.
+        rm -f "$WORKDIR/.clean-on-restart"
+        require_java
+        ensure_jar
+        ensure_keystore
+        ensure_config
+        launch_node
+        ;;
+    --help|-h) sed -n '2,18p' "$0" | sed 's/^# \?//' ;;
     "")
+        # Default: stop any running JVM, wipe local chain state, then launch.
+        # This is the safe-by-default path for operators connecting to a chain
+        # that may have been redeployed (avoids the divergence-at-genesis trap).
+        # The .clean-on-restart marker left by the UI is handled here too.
+        stop_node
+        wipe_state
+        rm -f "$WORKDIR/.clean-on-restart"
         require_java
         ensure_jar
         ensure_keystore
