@@ -6,13 +6,34 @@ Running a node makes you a validator on the Sentiment chain. You get a local web
 
 ## Quick start
 
-You need **Java 17** and outbound internet. Nothing else.
+You need **Java 17** and outbound internet. Nothing else. (On Windows, see [Windows (WSL2)](#windows-wsl2) below — `run.sh` is a bash script and won't run in PowerShell.)
 
 ```bash
 git clone https://github.com/Give-Sentiment/sentiment-rapp-releases.git
 cd sentiment-rapp-releases
 ./run.sh
 ```
+
+### Windows (WSL2)
+
+`run.sh` needs bash, so on Windows run the node inside WSL2 (Windows Subsystem for Linux). One-time setup in PowerShell (as Administrator), then reboot if prompted:
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+Then open the **Ubuntu** app and follow the normal quick start:
+
+```bash
+sudo apt-get update && sudo apt-get install -y openjdk-17-jdk git
+git clone https://github.com/Give-Sentiment/sentiment-rapp-releases.git
+cd sentiment-rapp-releases
+./run.sh
+```
+
+Open <http://127.0.0.1:9010> in your normal Windows browser — WSL2 forwards localhost automatically. All the `./run.sh --status/--logs/--stop` commands below work the same inside Ubuntu. (Git Bash is not supported — the script's process management is unreliable there.)
+
+Mobile hotspots and home NAT are fine: the node only needs outbound internet and joins the network over a relay.
 
 The script downloads + verifies the JAR (~166 MB), generates a unique keystore for your node, writes `config.env`, and launches the node. After about 30–60 seconds you'll see:
 
