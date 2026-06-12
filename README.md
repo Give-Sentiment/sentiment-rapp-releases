@@ -33,8 +33,6 @@ cd sentiment-rapp-releases
 
 Open <http://127.0.0.1:9010> in your normal Windows browser — WSL2 forwards localhost automatically. All the `./run.sh --status/--logs/--stop` commands below work the same inside Ubuntu. (Git Bash is not supported — the script's process management is unreliable there.)
 
-Mobile hotspots and home NAT are fine: the node only needs outbound internet and joins the network over a relay.
-
 The script downloads + verifies the JAR (~166 MB), generates a unique keystore for your node, writes `config.env`, and launches the node. After about 30–60 seconds you'll see:
 
 ```
