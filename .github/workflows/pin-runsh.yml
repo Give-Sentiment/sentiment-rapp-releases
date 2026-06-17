@@ -1,0 +1,48 @@
+name: Pin run.sh to the latest release
+
+# Whenever a release is PUBLISHED, rewrite run.sh's RAPP_VERSION + JAR_SHA256 to
+# match that release's jar asset, and commit to main. This guarantees operators
+# downloading run.sh always get the just-released jar — we kept forgetting to
+# bump the pin by hand, so this enforces it.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  pin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Pin run.sh to ${{ github.event.release.tag_name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          ASSET="sentiment-reality-assembly-0.1.0-SNAPSHOT.jar"
+
+          # Fail loudly if the release has no jar asset (e.g. a draft/interrupted upload).
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ASSET" --output /tmp/rapp.jar --clobber
+          SHA="$(sha256sum /tmp/rapp.jar | awk '{print $1}')"
+          echo "release=$TAG asset_sha256=$SHA"
+
+          sed -i -E "s|^RAPP_VERSION=.*|RAPP_VERSION=\"$TAG\"|" run.sh
+          sed -i -E "s|^JAR_SHA256=.*|JAR_SHA256=\"$SHA\"|" run.sh
+
+          if git diff --quiet -- run.sh; then
+            echo "run.sh already pinned to $TAG ($SHA) — nothing to do."
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add run.sh
+          git commit -m "run.sh: auto-pin to ${TAG} (sha ${SHA:0:16}…) [skip ci]"
+          git push origin main
