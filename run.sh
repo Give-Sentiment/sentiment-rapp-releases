@@ -21,9 +21,9 @@
 set -euo pipefail
 
 # ── Constants (release pinning) ──────────────────────────────────────────────
-RAPP_VERSION="v0.2.8-testnet"
+RAPP_VERSION="v0.2.9-testnet"
 JAR_URL="https://github.com/Give-Sentiment/sentiment-rapp-releases/releases/download/${RAPP_VERSION}/sentiment-reality-assembly-0.1.0-SNAPSHOT.jar"
-JAR_SHA256="3605e8b5a504252a402ddb68f7600f9c075f4e9e2ebf7d6cf62e50ad07d5dc35"
+JAR_SHA256="71a4d153a13084d40f857fa8d08975c7e361d77c16535cd4d74d56c7eaff5183"
 
 # Sentiment chain (testnet) — where your operator node syncs from.
 CHAIN_HOST="46.101.82.227"
